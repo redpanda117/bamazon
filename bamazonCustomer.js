@@ -15,10 +15,11 @@ var connection = mysql.createConnection({
 connection.connect(function (err) {
     if (err) throw err;
     /*test to see connected to server
-    console.log("connected as id " + connection.threadId);*/
-    displayProducts();
+    console.log("connected as id " + connection.threadId);*/    
+    customerBuy();
 });
 
+//function that show current items for sale
 function displayProducts() {
     connection.query("SELECT * FROM products_list", function (err, res) {
         if (err) throw err;
@@ -26,10 +27,11 @@ function displayProducts() {
             console.log("ItemId:  "+res[i].item_id + " | " + "Name: " + res[i].product_name + "  |   " + "Price : " +"$"+ res[i].price);
         }
     });
-    customerBuy();
 }
 
+//function that take the customer order.
 function customerBuy() {
+    displayProducts();
     var currentItem;
     connection.query("SELECT * FROM products_list", function (err, res) {
         if (err) throw err;
@@ -74,6 +76,7 @@ function customerBuy() {
     });
 }
 
+/*function that update the stock quantity in mySQL and calculate total cost of the transaction.*/
 function updateQuantity(id, amount) {
     //making sure the right values was inherit
     //console.log(id + " " + amount);
@@ -86,14 +89,15 @@ function updateQuantity(id, amount) {
 
             //check if only the picked item data was retrive.
             //console.log(res);
-
+            
+            /*data that was retrive from mySQL and store into variables that will be use later */ 
             var newQuantity = res[0].stock_quantity - amount;
             var itemId = res[0].item_id;
             var name = res[0].product_name;
             var price = res[0].price;
             var cost = res[0].price * amount;
             
-            //making sure the varaiable data was correct    
+            //making sure the varaiable data was correct  
             //console.log(itemId); 
             //console.log(newquantity);
             //console.log(cost);
@@ -106,6 +110,7 @@ function updateQuantity(id, amount) {
                         }
             ], function (err, res) {
                 if (err) throw err;
+        //print the receipt 
                 console.log("--------------------");
                 console.log("Bamazon Receipt");
                 console.log("   ");
