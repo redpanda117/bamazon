@@ -29,11 +29,11 @@ function menu() {
         if (answer.choice === "View Product Sales") {
             //show current inventory   
             displayProducts();
-        } else if (answer.choice === "View Low Inventory") {
-            //view low inventory
+        } else if (answer.choice === "View Low Inventory") { //view low inventory
             lowInventory();
         } else if (answer.choice === "Add Inventory") {
-
+            /*function for user input which inventory person want to add*/
+            whichAddInventory();
         } else {
 
         }
@@ -54,6 +54,7 @@ function displayProducts() {
         });
 }
 
+/*function that display any low inventory or if it is fully stock*/
 function lowInventory() {
     connection.query("SELECT * FROM products_list WHERE stock_quantity <= 5 ",
         function (err, res) {
@@ -64,13 +65,101 @@ function lowInventory() {
                     console.log("ItemId:  " + res[i].item_id + " | " + "Name: " + res[i].product_name + "  |   " + "Price : " + "$" + res[i].price + " | " + "Quantity: " + res[i].stock_quantity);
                 }
             } else {
-            //all items in the inventory has more than 5 quantity.
+                //all items in the inventory has more than 5 quantity.
                 console.log("Inventory Fully Stocked");
             }
             newSearchOrLeave();
         });
 }
 
+//input what inventoy user want to add
+function whichAddInventory() {
+    var currentItem;
+    connection.query("SELECT * FROM products_list", function (err, res) {
+        if (err) throw err;
+        for (var i = 0; i < res.length; i++) {
+            console.log("ItemId:  " + res[i].item_id + " | " + "Name: " + res[i].product_name + "  |   " + "Price : " + "$" + res[i].price + " | " + "Quantity: " + res[i].stock_quantity);
+        }
+        inquirer.prompt([
+            {
+                name: "productId",
+                type: "input",
+                message: "Please enter the itemId of the product you wish to purchase:",
+                validate: function (value) {
+                    //does the id exist in mySQL table
+                    for (var i = 0; i < res.length; i++) {
+                        if (value == res[i].item_id) {
+                            currentItem = res[i];
+                            return true;
+                        }
+                    }
+                    return "Please enter valid id.";
+
+                }
+         }, {
+                name: "quantity",
+                type: "input",
+                message: "How many do you want?",
+                validate: function (value) {
+                    //see if it is not a number
+                    if (isNaN(value) == true) {
+                        return "Please enter a valid number";
+                    } else if (value % 1 != 0) {
+                        //if person enter a whole number because whole number will not have a remainder.
+                        return "Please enter a whole number.";
+                    } else if (value <= 0) {
+                        //is the number greater than zero.So number cannot be zero or a negative number.
+                        return "Please enter a valid quantity";
+                    } else {
+                        return true;
+                    }
+                }
+                    }
+                ]).then(function (answer) {
+            updateQuantity(answer.productId, answer.quantity);
+        })
+    });
+}
+
+function updateQuantity(id, amount) {
+    //making sure the right values was inherit
+    //console.log(id + " " + amount);
+    connection.query("Select * from products_list Where ?", [{
+            //selecting only the item information that the user picked
+            item_id: id
+                     }],
+        function (err, res) {
+            if (err) throw err;
+
+            //check if only the picked item data was retrive.
+            //console.log(res);
+
+            /*data that was retrive from mySQL and store into variables that will be use later */
+            var newQuantity = parseInt(res[0].stock_quantity) + parseInt(amount);
+            var itemId = res[0].item_id;
+
+            //making sure the varaiable data was correct  
+            //console.log(itemId); 
+            //console.log(newquantity);
+            //console.log(cost);
+
+            connection.query("Update products_list Set ? Where ?", [
+                {
+                    stock_quantity: newQuantity
+                    }, {
+                    item_id: itemId
+                        }
+            ], function (err, res) {
+                if (err) throw err;
+                //confirm inventory has been updated 
+                console.log("--------------------");
+                console.log("Inventory Added Sucessful");
+                console.log("--------------------");
+                newSearchOrLeave();
+            })
+
+        });
+}
 
 //function to see if the manager is done using the app
 function newSearchOrLeave() {

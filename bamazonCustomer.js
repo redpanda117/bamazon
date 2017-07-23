@@ -15,7 +15,7 @@ var connection = mysql.createConnection({
 connection.connect(function (err) {
     if (err) throw err;
     /*test to see connected to server
-    console.log("connected as id " + connection.threadId);*/    
+    console.log("connected as id " + connection.threadId);*/
     customerBuy();
 });
 
@@ -24,7 +24,7 @@ function displayProducts() {
     connection.query("SELECT * FROM products_list", function (err, res) {
         if (err) throw err;
         for (var i = 0; i < res.length; i++) {
-            console.log("ItemId:  "+res[i].item_id + " | " + "Name: " + res[i].product_name + "  |   " + "Price : " +"$"+ res[i].price);
+            console.log("ItemId:  " + res[i].item_id + " | " + "Name: " + res[i].product_name + "  |   " + "Price : " + "$" + res[i].price);
         }
     });
 }
@@ -35,18 +35,19 @@ function customerBuy() {
     var currentItem;
     connection.query("SELECT * FROM products_list", function (err, res) {
         if (err) throw err;
-        inquirer.prompt([
+    inquirer.prompt([
             {
                 name: "productId",
                 type: "input",
                 message: "Please enter the itemId of the product you wish to purchase:",
                 validate: function (value) {
+                //does the id exist in mySQL table
                     for (var i = 0; i < res.length; i++) {
                         if (value == res[i].item_id) {
                             currentItem = res[i];
                             return true;
                         }
-                    }
+                    }return "Please enter valid id.";
                 }
          }, {
                 name: "quantity",
@@ -89,19 +90,19 @@ function updateQuantity(id, amount) {
 
             //check if only the picked item data was retrive.
             //console.log(res);
-            
-            /*data that was retrive from mySQL and store into variables that will be use later */ 
+
+            /*data that was retrive from mySQL and store into variables that will be use later */
             var newQuantity = res[0].stock_quantity - amount;
             var itemId = res[0].item_id;
             var name = res[0].product_name;
             var price = res[0].price;
             var cost = res[0].price * amount;
-            
+
             //making sure the varaiable data was correct  
             //console.log(itemId); 
             //console.log(newquantity);
             //console.log(cost);
-        
+
             connection.query("Update products_list Set ? Where ?", [
                 {
                     stock_quantity: newQuantity
@@ -110,25 +111,25 @@ function updateQuantity(id, amount) {
                         }
             ], function (err, res) {
                 if (err) throw err;
-        //print the receipt 
+                //print the receipt 
                 console.log("--------------------");
                 console.log("Bamazon Receipt");
                 console.log("   ");
-                console.log(amount +" "+ name + " cost " + price + " each.");
+                console.log(amount + " " + name + " cost " + price + " each.");
                 console.log("Total amount $" + cost);
                 console.log("--------------------");
                 inquirer.prompt([{
                     type: "confirm",
-                    message:"Do you want to buy something else?",
-                    name:"confirm",
-                    default:true
-                }]).then(function(answer){
-                //user want to continue shopping 
-                    if(answer.confirm){
+                    message: "Do you want to buy something else?",
+                    name: "confirm",
+                    default: true
+                }]).then(function (answer) {
+                    //user want to continue shopping 
+                    if (answer.confirm) {
                         console.log("Do you want to make another order");
-                        customerBuy();    
-                    }else{
-                //user done with shopping
+                        customerBuy();
+                    } else {
+                        //user done with shopping
                         console.log("Thank you for shopping at Bamazon. Have a nice day.");
                     }
                 })
