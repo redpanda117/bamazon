@@ -35,7 +35,7 @@ function menu() {
             /*function for user input which inventory person want to add*/
             whichAddInventory();
         } else {
-
+            newProductInfo();
         }
 
     })
@@ -78,13 +78,13 @@ function whichAddInventory() {
     connection.query("SELECT * FROM products_list", function (err, res) {
         if (err) throw err;
         for (var i = 0; i < res.length; i++) {
-            console.log("ItemId:  " + res[i].item_id + " | " + "Name: " + res[i].product_name + "  |   " + "Price : " + "$" + res[i].price + " | " + "Quantity: " + res[i].stock_quantity);
+            console.log("ItemId:  " + res[i].item_id + " | " + "Name: " + res[i].product_name + "  |   " + "Quantity: " + res[i].stock_quantity);
         }
         inquirer.prompt([
             {
                 name: "productId",
                 type: "input",
-                message: "Please enter the itemId of the product you wish to purchase:",
+                message: "Please enter the itemId of the product you wish to restock:",
                 validate: function (value) {
                     //does the id exist in mySQL table
                     for (var i = 0; i < res.length; i++) {
@@ -99,7 +99,7 @@ function whichAddInventory() {
          }, {
                 name: "quantity",
                 type: "input",
-                message: "How many do you want?",
+                message: "How much do you want?",
                 validate: function (value) {
                     //see if it is not a number
                     if (isNaN(value) == true) {
@@ -121,6 +121,7 @@ function whichAddInventory() {
     });
 }
 
+//Adding to the stock inventory 
 function updateQuantity(id, amount) {
     //making sure the right values was inherit
     //console.log(id + " " + amount);
@@ -141,7 +142,6 @@ function updateQuantity(id, amount) {
             //making sure the varaiable data was correct  
             //console.log(itemId); 
             //console.log(newquantity);
-            //console.log(cost);
 
             connection.query("Update products_list Set ? Where ?", [
                 {
@@ -159,6 +159,86 @@ function updateQuantity(id, amount) {
             })
 
         });
+}
+
+//getting user input information about new product
+function newProductInfo() {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "productName",
+            message: "What is the name of the product?",
+ }, {
+            type: "input",
+            name: "department",
+            message: "What department does this product belong to?",
+            validate: function (value) {
+                //see if it has letters only
+                if (isNaN(value) == false) {
+                    return "Please enter valid letters";
+                } else {
+                    return true;
+                }
+            }
+ }, {
+            type: "input",
+            name: "price",
+            message: "How much will this product sell for?",
+            validate: function (value) {
+                //see if it is not a number
+                if (isNaN(value) == true) {
+                    return "Please enter a valid number";
+                } else if (value <= 0) {
+                    //is the number greater than zero.So number cannot be zero or a negative number.
+                    return "Please enter a valid quantity";
+                } else {
+                    return true;
+                }
+            }
+ }, {
+            type: "input",
+            name: "quantity",
+            message: "How many quantity do you whant to get?",
+            validate: function (value) {
+                //see if it is not a number
+                if (isNaN(value) == true) {
+                    return "Please enter a valid number";
+                } else if (value % 1 != 0) {
+                    //if person enter a whole number because whole number will not have a remainder.
+                    return "Please enter a whole number.";
+                } else if (value <= 0) {
+                    //is the number greater than zero.So number cannot be zero or a negative number.
+                    return "Please enter a valid quantity";
+                } else {
+                    return true;
+                }
+            }
+ }]).then(function (answer) {
+        addNewProduct(answer.productName, answer.department, answer.price, answer.quantity);
+    })
+}
+
+//function to add product to the mySQL table
+function addNewProduct(name, department, price, quantity) {
+    /*making sure the right values are recive
+    console.log(name);
+    console.log(department);
+    console.log(price);
+    console.log(quantity);*/
+    connection.query("INSERT into products_list SET ?", {
+            product_name: name,
+            department_name: department,
+            price: price,
+            stock_quantity: quantity
+        },
+        function (err, res) {
+            //confirm inventory has been updated 
+            console.log("--------------------");
+            console.log("New Product Has Been  Sucessful Added");
+            console.log("--------------------");
+            newSearchOrLeave();
+        })
+
 }
 
 //function to see if the manager is done using the app

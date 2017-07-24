@@ -35,19 +35,20 @@ function customerBuy() {
     var currentItem;
     connection.query("SELECT * FROM products_list", function (err, res) {
         if (err) throw err;
-    inquirer.prompt([
+        inquirer.prompt([
             {
                 name: "productId",
                 type: "input",
                 message: "Please enter the itemId of the product you wish to purchase:",
                 validate: function (value) {
-                //does the id exist in mySQL table
+                    //does the id exist in mySQL table
                     for (var i = 0; i < res.length; i++) {
                         if (value == res[i].item_id) {
                             currentItem = res[i];
                             return true;
                         }
-                    }return "Please enter valid id.";
+                    }
+                    return "Please enter valid id.";
                 }
          }, {
                 name: "quantity",
@@ -115,7 +116,8 @@ function updateQuantity(id, amount) {
                 console.log("--------------------");
                 console.log("Bamazon Receipt");
                 console.log("   ");
-                console.log(amount + " " + name + " cost " + price + " each.");
+                console.log( " Bought " + amount + " " + name );
+                console.log( " $" + price + " each");
                 console.log("Total amount $" + cost);
                 console.log("--------------------");
                 inquirer.prompt([{
