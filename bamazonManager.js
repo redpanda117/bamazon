@@ -153,7 +153,7 @@ function updateQuantity(id, amount) {
                 if (err) throw err;
                 //confirm inventory has been updated 
                 console.log("--------------------");
-                console.log("Inventory Added Sucessful");
+                console.log("Inventory Added Successfully");
                 console.log("--------------------");
                 newSearchOrLeave();
             })
@@ -234,7 +234,7 @@ function addNewProduct(name, department, price, quantity) {
         function (err, res) {
             //confirm inventory has been updated 
             console.log("--------------------");
-            console.log("New Product Has Been  Sucessful Added");
+            console.log("New Product Has Been  Successfully Added");
             console.log("--------------------");
             newSearchOrLeave();
         })
